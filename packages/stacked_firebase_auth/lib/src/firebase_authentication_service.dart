@@ -29,10 +29,12 @@ class FirebaseAuthenticationService {
   final _googleSignIn = GoogleSignIn();
 
   FirebaseAuthenticationService({
-    @Deprecated('Pass in the appleRedirectUri through the signInWithApple function')
-        String? appleRedirectUri,
-    @Deprecated('Pass in the appleClientId through the signInWithApple function')
-        String? appleClientId,
+    @Deprecated(
+        'Pass in the appleRedirectUri through the signInWithApple function')
+    String? appleRedirectUri,
+    @Deprecated(
+        'Pass in the appleClientId through the signInWithApple function')
+    String? appleClientId,
     this.log,
   })  : _appleRedirectUri = appleRedirectUri,
         _appleClientId = appleClientId;
@@ -54,8 +56,9 @@ class FirebaseAuthenticationService {
   }
 
   /// Returns the latest userToken stored in the Firebase Auth lib
-  Future<String>? get userToken {
-    return firebaseAuth.currentUser?.getIdToken();
+  Future<String>? get userToken async {
+    final idToken = await firebaseAuth.currentUser?.getIdToken();
+    return idToken ?? '';
   }
 
   /// Returns true when a user has logged in or signed on this device
