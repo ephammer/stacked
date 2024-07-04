@@ -1,6 +1,6 @@
 name: stacked_firebase_auth
 description: A service class that provides Firebase Authentication Functionality on a single api
-version: 0.2.21
+version: 0.2.22
 homepage: https://github.com/FilledStacks/stacked
 
 environment:
@@ -12,16 +12,16 @@ dependencies:
     sdk: flutter
 
   # Firebase
-  firebase_core: ^2.1.1
-  firebase_auth: ^4.1.0
+  firebase_core: ^3.1.1
+  firebase_auth: ^5.1.1
   firebase_auth_platform_interface: ^7.0.2
 
   # Firebase Authentications
   google_sign_in: ^6.0.0
-  sign_in_with_apple: ^5.0.0
+  sign_in_with_apple: ^6.1.1
 
   # logging
-  logger: ^1.1.0
+  logger: ^2.3.0
 
   crypto: ^3.0.1
 
