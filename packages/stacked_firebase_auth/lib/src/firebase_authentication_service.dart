@@ -14,19 +14,20 @@ class FirebaseAuthenticationService {
   /// An Instance of Logger that can be used to log out what's happening in the service
   final Logger? log;
 
-  /// The URI to which the authorization redirects. It must include a domain name, and can’t be an IP address or localhost.
+  /// The URI to which the authorization redirects. It must include a domain name, and can't be an IP address or localhost.
   ///
   /// Must be configured at https://developer.apple.com/account/resources/identifiers/list/serviceId
   final String? _appleRedirectUri;
 
-  /// The developer’s client identifier, as provided by WWDR.
+  /// The developer's client identifier, as provided by WWDR.
   ///
   /// This is the Identifier value shown on the detail view of the service after opening it from https://developer.apple.com/account/resources/identifiers/list/serviceId
   /// Usually a reverse domain notation like com.example.app.service
   final String? _appleClientId;
 
   final firebaseAuth = FirebaseAuth.instance;
-  final _googleSignIn = GoogleSignIn();
+  final _googleSignIn = GoogleSignIn.instance;
+  bool _isGoogleSignInInitialized = false;
 
   FirebaseAuthenticationService({
     @Deprecated(
@@ -83,23 +84,34 @@ class FirebaseAuthenticationService {
     }
   }
 
+  /// Initialize Google Sign In. This must be called before using any Google Sign In functionality.
+  Future<void> initializeGoogleSignIn() async {
+    if (!_isGoogleSignInInitialized) {
+      await _googleSignIn.initialize();
+      _isGoogleSignInInitialized = true;
+    }
+  }
+
   Future<FirebaseAuthenticationResult> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await _googleSignIn.signIn();
-      if (googleSignInAccount == null) {
+      // Initialize Google Sign In if not already initialized
+      await initializeGoogleSignIn();
+
+      final GoogleSignInAccount? googleUser =
+          await _googleSignIn.authenticate();
+      if (googleUser == null) {
         log?.i('Process is canceled by the user');
         return FirebaseAuthenticationResult.error(
           errorMessage: 'Google Sign In has been canceled by the user',
           exceptionCode: 'canceled',
         );
       }
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication.accessToken,
-        idToken: googleSignInAuthentication.idToken,
+        idToken: googleAuth.idToken,
       );
 
       final result = await _signInWithCredential(credential);
@@ -324,7 +336,7 @@ class FirebaseAuthenticationService {
       return FirebaseAuthenticationResult.error(
         exceptionCode: e.code,
         errorMessage:
-            // 'We don’t have the ability to merge social accounts with existing Delivery Dudes accounts. Log in using the same email as this social platform.',
+            // 'We don't have the ability to merge social accounts with existing Delivery Dudes accounts. Log in using the same email as this social platform.',
             'To link your Facebook account with your existing account, please sign in with your email address and password.',
       );
     }
@@ -478,6 +490,8 @@ class FirebaseAuthenticationService {
 
     try {
       await firebaseAuth.signOut();
+      // Initialize Google Sign In if not already initialized before signing out
+      await initializeGoogleSignIn();
       await _googleSignIn.signOut();
       _clearPendingData();
     } catch (e) {
