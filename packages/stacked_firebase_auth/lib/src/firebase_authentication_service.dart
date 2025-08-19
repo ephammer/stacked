@@ -72,17 +72,17 @@ class FirebaseAuthenticationService {
     return firebaseAuth.authStateChanges();
   }
 
-  /// Returns `true` when email has a user registered
-  Future<bool> emailExists(String email) async {
-    try {
-      final signInMethods =
-          await firebaseAuth.fetchSignInMethodsForEmail(email);
+  // /// Returns `true` when email has a user registered
+  // Future<bool> emailExists(String email) async {
+  //   try {
+  //     final signInMethods =
+  //         await firebaseAuth.
 
-      return signInMethods.length > 0;
-    } on FirebaseAuthException catch (e) {
-      return e.code.toLowerCase() == 'invalid-email';
-    }
-  }
+  //     return signInMethods.length > 0;
+  //   } on FirebaseAuthException catch (e) {
+  //     return e.code.toLowerCase() == 'invalid-email';
+  //   }
+  // }
 
   /// Initialize Google Sign In. This must be called before using any Google Sign In functionality.
   Future<void> initializeGoogleSignIn() async {
@@ -311,60 +311,60 @@ class FirebaseAuthenticationService {
     }
   }
 
-  Future<FirebaseAuthenticationResult> _handleAccountExists(
-      FirebaseAuthException e) async {
-    if (e.code != 'account-exists-with-different-credential') {
-      return FirebaseAuthenticationResult.error(
-        exceptionCode: e.code.toLowerCase(),
-        errorMessage: e.toString(),
-      );
-    }
+  // Future<FirebaseAuthenticationResult> _handleAccountExists(
+  //     FirebaseAuthException e) async {
+  //   if (e.code != 'account-exists-with-different-credential') {
+  //     return FirebaseAuthenticationResult.error(
+  //       exceptionCode: e.code.toLowerCase(),
+  //       errorMessage: e.toString(),
+  //     );
+  //   }
 
-    // The account already exists with a different credential
-    _pendingEmail = e.email;
-    _pendingCredential = e.credential;
+  //   // The account already exists with a different credential
+  //   _pendingEmail = e.email;
+  //   _pendingCredential = e.credential;
 
-    // Fetch a list of what sign-in methods exist for the conflicting user
-    List<String> userSignInMethods =
-        await firebaseAuth.fetchSignInMethodsForEmail(_pendingEmail ?? '');
+  //   // // Fetch a list of what sign-in methods exist for the conflicting user
+  //   // List<String> userSignInMethods =
+  //   //     await firebaseAuth.fetchSignInMethodsForEmail(_pendingEmail ?? '');
 
-    // If the user has several sign-in methods,
-    // the first method in the list will be the "recommended" method to use.
+  //   // // If the user has several sign-in methods,
+  //   // // the first method in the list will be the "recommended" method to use.
 
-    // Check if the recommended account is email then tell them to sign up with email
-    if (userSignInMethods.first == 'password') {
-      return FirebaseAuthenticationResult.error(
-        exceptionCode: e.code,
-        errorMessage:
-            // 'We don't have the ability to merge social accounts with existing Delivery Dudes accounts. Log in using the same email as this social platform.',
-            'To link your Facebook account with your existing account, please sign in with your email address and password.',
-      );
-    }
+  //   // // Check if the recommended account is email then tell them to sign up with email
+  //   // if (userSignInMethods.first == 'password') {
+  //   //   return FirebaseAuthenticationResult.error(
+  //   //     exceptionCode: e.code,
+  //   //     errorMessage:
+  //   //         // 'We don't have the ability to merge social accounts with existing Delivery Dudes accounts. Log in using the same email as this social platform.',
+  //   //         'To link your Facebook account with your existing account, please sign in with your email address and password.',
+  //   //   );
+  //   // }
 
-    if (userSignInMethods.first == 'google.com') {
-      return FirebaseAuthenticationResult.error(
-        exceptionCode: e.code,
-        errorMessage:
-            'We could not log into your account but we noticed you have a Google account with the same details. Please try to login with Google.',
-      );
-    }
+  //   // if (userSignInMethods.first == 'google.com') {
+  //   //   return FirebaseAuthenticationResult.error(
+  //   //     exceptionCode: e.code,
+  //   //     errorMessage:
+  //   //         'We could not log into your account but we noticed you have a Google account with the same details. Please try to login with Google.',
+  //   //   );
+  //   // }
 
-    if (userSignInMethods.first == 'apple') {
-      return FirebaseAuthenticationResult.error(
-        exceptionCode: e.code,
-        errorMessage:
-            'We could not log into your account but we noticed you have a Apple account with the same details. Please try to login with your Apple account instead.',
-      );
-    }
+  //   // if (userSignInMethods.first == 'apple') {
+  //   //   return FirebaseAuthenticationResult.error(
+  //   //     exceptionCode: e.code,
+  //   //     errorMessage:
+  //   //         'We could not log into your account but we noticed you have a Apple account with the same details. Please try to login with your Apple account instead.',
+  //   //   );
+  //   // }
 
-    // This is here to ensure if we ever get into this function we HAVE to give the user feedback on this error. So we use the sign In methods recommended account
-    // and the throw the user an exception.
-    return FirebaseAuthenticationResult.error(
-      exceptionCode: e.code,
-      errorMessage:
-          'We could not log into your account but we noticed you have a ${userSignInMethods.first} account with the same details. Please try to login with that instead.',
-    );
-  }
+  //   // // This is here to ensure if we ever get into this function we HAVE to give the user feedback on this error. So we use the sign In methods recommended account
+  //   // // and the throw the user an exception.
+  //   // return FirebaseAuthenticationResult.error(
+  //   //   exceptionCode: e.code,
+  //   //   errorMessage:
+  //   //       'We could not log into your account but we noticed you have a ${userSignInMethods.first} account with the same details. Please try to login with that instead.',
+  //   // );
+  // }
 
   /// Phone Number Login
   ///
@@ -543,7 +543,7 @@ class FirebaseAuthenticationService {
 
   /// Update the [email] of the Firebase User
   Future updateEmail(String email) async {
-    await firebaseAuth.currentUser?.updateEmail(email);
+    await firebaseAuth.currentUser?.verifyBeforeUpdateEmail(email);
   }
 
   /// Generates a cryptographically secure random nonce, to be included in a
