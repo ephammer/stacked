@@ -85,17 +85,29 @@ class FirebaseAuthenticationService {
   // }
 
   /// Initialize Google Sign In. This must be called before using any Google Sign In functionality.
-  Future<void> initializeGoogleSignIn() async {
+  ///
+  /// On Android, [serverClientId] (the OAuth 2.0 Web client ID from the Firebase
+  /// project — `client_type: 3` in `google-services.json`) MUST be provided for
+  /// `authenticate()` to return an ID token. Without it the Credential Manager
+  /// flow succeeds but `idToken` is null, and Firebase reports
+  /// `[28404] Failed to retrieve an ID token`.
+  ///
+  /// On iOS, the `clientId` is loaded automatically from `GoogleService-Info.plist`,
+  /// so [serverClientId] is optional there but still recommended for parity.
+  Future<void> initializeGoogleSignIn({String? serverClientId}) async {
     if (!_isGoogleSignInInitialized) {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(serverClientId: serverClientId);
       _isGoogleSignInInitialized = true;
     }
   }
 
-  Future<FirebaseAuthenticationResult> signInWithGoogle() async {
+  /// Sign in with Google. See [initializeGoogleSignIn] for [serverClientId] semantics.
+  Future<FirebaseAuthenticationResult> signInWithGoogle({
+    String? serverClientId,
+  }) async {
     try {
       // Initialize Google Sign In if not already initialized
-      await initializeGoogleSignIn();
+      await initializeGoogleSignIn(serverClientId: serverClientId);
 
       final GoogleSignInAccount? googleUser =
           await _googleSignIn.authenticate();
